@@ -1,0 +1,1 @@
+xcopy /y "database\example_database.json.backup" "database\example_database.json"

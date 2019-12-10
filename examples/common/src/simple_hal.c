@@ -52,6 +52,9 @@
 #include "app_timer.h"
 #include "app_error.h"
 
+/* Logging and RTT */
+#include "log.h"
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -88,6 +91,35 @@ APP_TIMER_DEF(m_blink_timer);
 static uint32_t m_blink_count;
 static uint32_t m_blink_mask;
 static uint32_t m_prev_state;
+#endif
+
+#if defined(BOARD_PCA10059)
+#define LED_START	LED_1
+#define LED_STOP	LED_4
+
+/**
+ * Function for configuring UICR_REGOUT0 register
+ * to set GPIO output voltage to 3.0V.
+ */
+static void gpio_output_voltage_setup(void)
+{
+    // Configure UICR_REGOUT0 register only if it is set to default value.
+    if ((NRF_UICR->REGOUT0 & UICR_REGOUT0_VOUT_Msk) ==
+        (UICR_REGOUT0_VOUT_DEFAULT << UICR_REGOUT0_VOUT_Pos))
+    {
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+
+        NRF_UICR->REGOUT0 = (NRF_UICR->REGOUT0 & ~((uint32_t)UICR_REGOUT0_VOUT_Msk)) |
+                            (UICR_REGOUT0_VOUT_3V0 << UICR_REGOUT0_VOUT_Pos);
+
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+
+        // System reset is needed to update UICR registers.
+        NVIC_SystemReset();
+    }
+}
 #endif
 
 /*****************************************************************************
@@ -166,6 +198,18 @@ void hal_led_blink_stop(void)
 
 void hal_leds_init(void)
 {
+  #if defined(BOARD_PCA10059)
+    // If nRF52 USB Dongle is powered from USB (high voltage mode),
+    // GPIO output voltage is set to 1.8 V by default, which is not
+    // enough to turn on green and blue LEDs. Therefore, GPIO voltage
+    // needs to be increased to 3.0 V by configuring the UICR register.
+    if (NRF_POWER->MAINREGSTATUS &
+       (POWER_MAINREGSTATUS_MAINREGSTATUS_High << POWER_MAINREGSTATUS_MAINREGSTATUS_Pos))
+    {
+        gpio_output_voltage_setup();
+    }
+    #endif  
+
     for (uint32_t i = LED_START; i <= LED_STOP; ++i)
     {
         NRF_GPIO->PIN_CNF[i] = LED_PIN_CONFIG;
@@ -183,6 +227,7 @@ uint32_t hal_buttons_init(hal_button_handler_cb_t cb)
 #else
     if (cb == NULL)
     {
+       __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "2. buttons set\n");
         return NRF_ERROR_NULL;
     }
     m_button_handler_cb = cb;
@@ -197,6 +242,9 @@ uint32_t hal_buttons_init(hal_button_handler_cb_t cb)
 
     NVIC_SetPriority(GPIOTE_IRQn, GPIOTE_IRQ_LEVEL);
     NVIC_EnableIRQ(GPIOTE_IRQn);
+
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "3. buttons set\n");
+ 
     return NRF_SUCCESS;
 #endif
 }
@@ -208,6 +256,7 @@ uint32_t hal_buttons_init(hal_button_handler_cb_t cb)
 #if BUTTON_BOARD
 void GPIOTE_IRQHandler(void)
 {
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "in GPIO handler\n");
     NRF_GPIOTE->EVENTS_PORT = 0;
     for (uint8_t i = 0; i < BUTTONS_NUMBER; ++i)
     {
@@ -218,9 +267,13 @@ void GPIOTE_IRQHandler(void)
         if ((~NRF_GPIO->IN & (1 << (m_buttons_list[i]))) &&
             TIMER_DIFF(m_last_button_press, NRF_RTC1->COUNTER) > HAL_BUTTON_PRESS_FREQUENCY)
         {
+           __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "pressed\n");
             m_last_button_press = NRF_RTC1->COUNTER;
             m_button_handler_cb(i);
         }
-    }
+        else{
+            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "button error\n");
+        }
+}
 }
 #endif

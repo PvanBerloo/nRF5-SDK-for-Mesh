@@ -223,21 +223,28 @@ static void button_event_handler(uint32_t button_number)
     generic_onoff_set_params_t set_params;
     model_transition_t transition_params;
     static uint8_t tid = 0;
+    static bool LEDStat; 
 
-    /* Button 1: On, Button 2: Off, Client[0]
-     * Button 2: On, Button 3: Off, Client[1]
+    /* Button 1: On, Button 1: Off, Client[0]
      */
 
-    switch(button_number)
+ if (button_number == 0)
+     {
+          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "1.1\n");
+         LEDStat = !LEDStat; 
+    }
+
+ __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "STAT %u pressed\n", LEDStat);
+
+    switch(LEDStat)
     {
         case 0:
-        case 2:
-            set_params.on_off = APP_STATE_ON;
-            break;
-
-        case 1:
-        case 3:
             set_params.on_off = APP_STATE_OFF;
+           
+            break;
+        case 1:
+            set_params.on_off = APP_STATE_ON;
+            
             break;
     }
 
@@ -246,24 +253,9 @@ static void button_event_handler(uint32_t button_number)
     transition_params.transition_time_ms = 100;
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sending msg: ONOFF SET %d\n", set_params.on_off);
 
-    switch (button_number)
-    {
-        /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
-        the STATUS message to inform client about the state change. This is a demonstration of
-        state change publication due to local event. */
-        case 0:
-        case 1:
-        {
-            //hal_led_pin_set(ONOFF_SERVER_0_LED, !hal_led_pin_get(ONOFF_SERVER_0_LED));
-            //app_onoff_status_publish(&m_onoff_server_0);
-            (void)access_model_reliable_cancel(m_onoff_client_0.model_handle);
-            status = generic_onoff_client_set(&m_onoff_client_0, &set_params, &transition_params);
-            break;
-        }
-
+     if (button_number == 1) //reset with rtt input 1
+     {
         /* Initiate node reset */
-        case 3:
-        {
             /* Clear all the states to reset the node. */
             if (mesh_stack_is_device_provisioned())
             {
@@ -277,6 +269,21 @@ static void button_event_handler(uint32_t button_number)
             {
                 __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "The device is unprovisioned. Resetting has no effect.\n");
             }
+
+            }
+
+    switch (LEDStat)
+    {
+        /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
+        the STATUS message to inform client about the state change. This is a demonstration of
+        state change publication due to local event. */
+        case 0:
+        case 1:
+        {
+            //hal_led_pin_set(ONOFF_SERVER_0_LED, !hal_led_pin_get(ONOFF_SERVER_0_LED));
+            //app_onoff_status_publish(&m_onoff_server_0);
+            (void)access_model_reliable_cancel(m_onoff_client_0.model_handle);
+            status = generic_onoff_client_set(&m_onoff_client_0, &set_params, &transition_params);
             break;
         }
 
@@ -382,7 +389,7 @@ static void initialize(void)
 
     ERROR_CHECK(app_timer_init());
     hal_leds_init();
-
+  
 #if BUTTON_BOARD
     ERROR_CHECK(hal_buttons_init(button_event_handler));
 #endif

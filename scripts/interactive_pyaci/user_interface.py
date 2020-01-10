@@ -5,8 +5,10 @@ if sys.version_info < (3, 5):
            "You are currently using Python {}.{}").format(sys.argv[0], *sys.version_info))
     sys.exit(1)
  
-import threading
+
 import os
+import queue
+import threading
 import time
  
 from aci.aci_uart import Uart
@@ -116,29 +118,30 @@ class Interactive(object):
                 self._other_events.append(event)
  
  
-address_handle_event = threading.Event()
-devkey_handle_event = threading.Event()
+composition_data_event = threading.Event()
+
+address_queue = queue.Queue(1)
+devkey_queue = queue.Queue(1)
  
-new_devkey_handle = None
-new_address_handle = None
- 
- 
- 
-def node_get(src):
+def find_node(src):
         for node in db.nodes:
             if node.unicast_address == src:
                 return node
- 
+
 def get_handles(node):
     device.send(cmd.DevkeyAdd(node.unicast_address, 0, node.device_key))
     device.send(cmd.AddrPublicationAdd(node.unicast_address))
  
-    address_handle_event.wait()
-    devkey_handle_event.wait()
-    address_handle_event.clear()
-    devkey_handle_event.clear()
+    address_handle = address_queue.get()
+    devkey_handle = devkey_queue.get()
  
-    print('Got handle for node:', node.unicast_address, 'devkey_handle:', new_devkey_handle, 'address_handle:', new_address_handle)
+    print('Got handle for node:', node.unicast_address, 'devkey_handle:', devkey_handle, 'address_handle:', address_handle)
+
+    return (devkey_handle, address_handle)
+
+def free_handles(devkey_handle, address_handle):
+    device.send(cmd.DevkeyDelete(devkey_handle))
+    device.send(cmd.AddrPublicationRemove(address_handle))
  
 def event_handler(event):
     thread = threading.Thread(target = event_handler_thread, args=(event, ))
@@ -147,41 +150,54 @@ def event_handler(event):
 def event_handler_thread(event):
     if event._opcode == evt.Event.PROV_COMPLETE:
         print('Node provisioned with address:', hex(event._data["address"]))
- 
-        address_handle_event.wait()
-        devkey_handle_event.wait()
-        address_handle_event.clear()
-        devkey_handle_event.clear()
+
+        address_handle = address_queue.get()
+        devkey_handle = devkey_queue.get()
  
         unicast_address = event._data["address"]
+
+        print('Got handle for node:', unicast_address, 'devkey_handle:', devkey_handle, 'address_handle:', address_handle)
  
-        # calculate handles from address.
-        # for some reason the handle variables do not get updated between threads.
-        n = int((int(unicast_address) - 16)/2)
- 
-        cc.publish_set(n + 8, n + 0)
+        cc.publish_set(devkey_handle, address_handle)
         cc.appkey_add(0)
+
+        time.sleep(1)
  
         cc.composition_data_get()
        
         # wait for composition data
-        # should create a way to wait for an event in the event handler
-        time.sleep(5)
- 
-        cc.model_app_bind(unicast_address, 0, mt.ModelId(0x1000))
-        cc.model_app_bind(unicast_address+1, 0, mt.ModelId(0x1001))
- 
+        composition_data_event.wait()
+        composition_data_event.clear()
+        print("Received composition data.")
+
+        # bind appkey 0 to all models
+        node = find_node(unicast_address)
+        for element in node.elements:
+            for model in element.models:
+                cc.model_app_bind(unicast_address + element.index, 0, model.model_id)
+
+        #cc.model_publication_set(unicast_address, mt.ModelId(0x0002), mt.Publish(0x0001, index=0, ttl=1))
+
+        time.sleep(1)
+
+        db.store()
+
+        free_handles(devkey_handle, address_handle)
+
     if event._opcode == evt.Event.CMD_RSP:
         result = cmd.response_deserialize(event)
         if type(result) is cmd.AddrPublicationAddRsp:
-            new_address_handle = result._data["address_handle"]
-            print('got address_handle:',new_address_handle)
-            address_handle_event.set()
+            address_queue.put(result._data["address_handle"])
         if type(result) is cmd.DevkeyAddRsp:
-            new_devkey_handle = result._data["devkey_handle"]
-            print('got devkey_handle:',new_devkey_handle)
-            devkey_handle_event.set()
- 
+            devkey_queue.put(result._data["devkey_handle"])
+
+    if event._opcode == evt.Event.MESH_MESSAGE_RECEIVED_UNICAST:
+        opcode = access.opcode_from_message_get(event._data["data"])
+
+        if (cc._COMPOSITION_DATA_STATUS.serialize() == opcode):
+            composition_data_event.set()
+
+        print(opcode)
  
 def print_commands():
     print('0 - show this.')
@@ -191,6 +207,8 @@ def print_commands():
     print('4 - provision device.')
     print('5 - list nodes.')
     print('6 - set publish address of client.')
+    print('7 - set subscribe address of server.')
+    print('8 - unprovision node.')
    
 db = MeshDB("database/example_database.json")
 
@@ -232,64 +250,61 @@ while True:
         i = int(input('Enter the index of the unprovisioned device: '))
  
         if (-1 < i < len(p.unprov_list)):
+            # remove old nodes with same UUID as new node
+            db.nodes = [n for n in db.nodes if n.UUID.hex() != p.unprov_list[i].hex()]
+
             p.provision(uuid = p.unprov_list[i])
             p.unprov_list.pop(i)
-            time.sleep(3)
         else:
             print('Invalid index.')
  
     if keycode == '5':
         print('Nodes:')
         for i in range(len(db.nodes)):
-            print('[' + str(i) + '] - Unicast address:', hex(db.nodes[i].unicast_address))
-       
+            print('[' + str(i) + '] - Unicast address:', hex(db.nodes[i].unicast_address))      
  
     if keycode == '6':
         client_id = int(input('Client ID: '))
         client_unicast_address = db.nodes[client_id].unicast_address
+
+        n = db.nodes[client_id]
+
+        devkey_handle, address_handle = get_handles(n)
  
+        cc.publish_set(devkey_handle, address_handle)
+        cc.model_publication_set(client_unicast_address + 1, mt.ModelId(0x1001), mt.Publish(50000, index=0, ttl=1))
+
+        free_handles(devkey_handle, address_handle)
+
+    if keycode == '7':
         server_id = int(input('Server ID: '))
         server_unicast_address = db.nodes[server_id].unicast_address
+
+        n = db.nodes[server_id]
+
+        devkey_handle, address_handle = get_handles(n)
  
-        # calculate handles from address.
-        # for some reason the handle variables do not get updated between threads.
-        n = int((int(client_unicast_address) - 16)/2)
+        cc.publish_set(devkey_handle, address_handle)
+        cc.model_subscription_delete_all(server_unicast_address, mt.ModelId(0x1000))
+        cc.model_subscription_add(server_unicast_address, 50000, mt.ModelId(0x1000))
+
+        free_handles(devkey_handle, address_handle)
  
-        cc.publish_set(n + 8, n + 0)
-        cc.model_publication_set(client_unicast_address + 1, mt.ModelId(0x1001), mt.Publish(server_unicast_address, index=0, ttl=1))
+    if keycode == '8':
+        i = int(input('Enter the index of the node: '))
  
-        '''client_id = int(input('Client ID: '))
-        client_unicast_address = db.nodes[client_id].unicast_address
- 
-        n = int((int(client_unicast_address) - 16)/2)
- 
-        cc.publish_set(n + 8, n + 0)
-        cc.appkey_add(0)
- 
-        cc.composition_data_get()
- 
-        time.sleep(1)
- 
-        cc.model_app_bind(client_unicast_address, 0, mt.ModelId(0x1000))
-        cc.model_app_bind(client_unicast_address+1, 0, mt.ModelId(0x1001))
- 
-        server_id = int(input('Server ID: '))
-        server_unicast_address = db.nodes[server_id].unicast_address
- 
-        cc.model_publication_set(client_unicast_address + 1, mt.ModelId(0x1001), mt.Publish(server_unicast_address, index=0, ttl=1))
- 
-        n = int((int(server_unicast_address) - 16)/2)
- 
-        cc.publish_set(n + 8, n + 0)
-        cc.appkey_add(0)
- 
-        cc.composition_data_get()
- 
-        time.sleep(1)
- 
-        cc.model_app_bind(server_unicast_address, 0, mt.ModelId(0x1000))
-        cc.model_app_bind(server_unicast_address+1, 0, mt.ModelId(0x1001))'''
- 
-       
+        if (-1 < i < len(db.nodes)):
+            n = db.nodes[i]
+
+            devkey_handle, address_handle = get_handles(n)
+
+            cc.publish_set(devkey_handle, address_handle)
+            cc.node_reset()
+
+            free_handles(devkey_handle, address_handle)
+            
+            db.nodes.pop(i)
+        else:
+            print('Invalid index.')
    
     print()

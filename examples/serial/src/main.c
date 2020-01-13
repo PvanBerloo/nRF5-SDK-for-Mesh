@@ -64,7 +64,7 @@ static void mesh_init(void)
     ERROR_CHECK(mesh_opt_prov_ecdh_offloading_set(true));
 
     __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing serial interface...\n");
-    ERROR_CHECK(nrf_mesh_serial_init(NULL));
+    ERROR_CHECK(nrf_mesh_serial_init(NULL));  //initializes the serial bearer interface
 }
 
 static void initialize(void)
@@ -88,7 +88,7 @@ static void initialize(void)
 
 static void start(void)
 {
-    ERROR_CHECK(nrf_mesh_serial_enable());
+    ERROR_CHECK(nrf_mesh_serial_enable());    //notify the external host that the device is ready to accept serial commands
 
     mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
 

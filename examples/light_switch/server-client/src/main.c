@@ -38,29 +38,32 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "mesh_opt_prov.h"
+
 /* HAL */
+#include "app_timer.h"
 #include "boards.h"
 #include "simple_hal.h"
-#include "app_timer.h"
 
 /* Core */
-#include "nrf_mesh_config_core.h"
-#include "nrf_mesh_gatt.h"
-#include "nrf_mesh_configure.h"
-#include "nrf_mesh.h"
-#include "nrf_delay.h"
-#include "mesh_stack.h"
-#include "device_state_manager.h"
+
 #include "access_config.h"
+#include "device_state_manager.h"
+#include "mesh_stack.h"
+#include "nrf_delay.h"
+#include "nrf_mesh.h"
+#include "nrf_mesh_config_core.h"
+#include "nrf_mesh_configure.h"
+#include "nrf_mesh_gatt.h"
 #include "proxy.h"
 
 /* Provisioning and configuration */
-#include "mesh_provisionee.h"
 #include "mesh_app_utils.h"
+#include "mesh_provisionee.h"
 
 /* Models */
-#include "generic_onoff_server.h"
 #include "generic_onoff_client.h"
+#include "generic_onoff_server.h"
 
 /* Logging and RTT */
 #include "log.h"
@@ -68,73 +71,69 @@
 
 /* Example specific includes */
 #include "app_config.h"
-#include "example_common.h"
-#include "nrf_mesh_config_examples.h"
-#include "light_switch_example_common.h"
 #include "app_onoff.h"
 #include "ble_softdevice_support.h"
+#include "example_common.h"
+#include "light_switch_example_common.h"
+#include "nrf_mesh_config_examples.h"
 
-#define APP_STATE_OFF                (0)
-#define APP_STATE_ON                 (1)
+#define APP_STATE_OFF (0)
+#define APP_STATE_ON (1)
 
-#define ONOFF_SERVER_0_LED          (BSP_LED_0)
-#define APP_ONOFF_ELEMENT_INDEX     (0)
+#define ONOFF_SERVER_0_LED (BSP_LED_0)
+#define APP_ONOFF_ELEMENT_INDEX (0)
 
 static bool m_device_provisioned;
 
 /*************************************************************************************************/
 /* Server model callback functions */
-static void app_onoff_server_set_cb(const app_onoff_server_t * p_server, bool onoff);
-static void app_onoff_server_get_cb(const app_onoff_server_t * p_server, bool * p_present_onoff);
+static void app_onoff_server_set_cb(const app_onoff_server_t *p_server, bool onoff);
+static void app_onoff_server_get_cb(const app_onoff_server_t *p_server, bool *p_present_onoff);
 
 /* Client model callback functions */
-static void app_gen_onoff_client_publish_interval_cb(access_model_handle_t handle, void * p_self);
-static void app_generic_onoff_client_status_cb(const generic_onoff_client_t * p_self,
-                                               const access_message_rx_meta_t * p_meta,
-                                               const generic_onoff_status_params_t * p_in);
+static void app_gen_onoff_client_publish_interval_cb(access_model_handle_t handle, void *p_self);
+static void app_generic_onoff_client_status_cb(const generic_onoff_client_t *p_self,
+    const access_message_rx_meta_t *p_meta,
+    const generic_onoff_status_params_t *p_in);
 static void app_gen_onoff_client_transaction_status_cb(access_model_handle_t model_handle,
-                                                       void * p_args,
-                                                       access_reliable_status_t status);
+    void *p_args,
+    access_reliable_status_t status);
 
 /* Generic OnOff server structure definition and initialization */
 APP_ONOFF_SERVER_DEF(m_onoff_server_0,
-                     APP_CONFIG_FORCE_SEGMENTATION,
-                     APP_CONFIG_MIC_SIZE,
-                     app_onoff_server_set_cb,
-                     app_onoff_server_get_cb)
+    APP_CONFIG_FORCE_SEGMENTATION,
+    APP_CONFIG_MIC_SIZE,
+    app_onoff_server_set_cb,
+    app_onoff_server_get_cb)
 
 static generic_onoff_client_t m_onoff_client_0;
 
 /* Generic OnOff client structure */
 const generic_onoff_client_callbacks_t client_cbs =
-{
-    .onoff_status_cb = app_generic_onoff_client_status_cb,
-    .ack_transaction_status_cb = app_gen_onoff_client_transaction_status_cb,
-    .periodic_publish_cb = app_gen_onoff_client_publish_interval_cb
-};
+    {
+        .onoff_status_cb = app_generic_onoff_client_status_cb,
+        .ack_transaction_status_cb = app_gen_onoff_client_transaction_status_cb,
+        .periodic_publish_cb = app_gen_onoff_client_publish_interval_cb};
 
 /* Callback for updating the hardware state */
-static void app_onoff_server_set_cb(const app_onoff_server_t * p_server, bool onoff)
-{
-    /* Resolve the server instance here if required, this example uses only 1 instance. */
+static void app_onoff_server_set_cb(const app_onoff_server_t *p_server, bool onoff) {
+  /* Resolve the server instance here if required, this example uses only 1 instance. */
 
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Setting GPIO value: %d\n", onoff)
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Setting GPIO value: %d\n", onoff)
 
-    hal_led_pin_set(ONOFF_SERVER_0_LED, onoff);
+  hal_led_pin_set(ONOFF_SERVER_0_LED, onoff);
 }
 
 /* Callback for reading the hardware state */
-static void app_onoff_server_get_cb(const app_onoff_server_t * p_server, bool * p_present_onoff)
-{
-    /* Resolve the server instance here if required, this example uses only 1 instance. */
+static void app_onoff_server_get_cb(const app_onoff_server_t *p_server, bool *p_present_onoff) {
+  /* Resolve the server instance here if required, this example uses only 1 instance. */
 
-    *p_present_onoff = hal_led_pin_get(ONOFF_SERVER_0_LED);
+  *p_present_onoff = hal_led_pin_get(ONOFF_SERVER_0_LED);
 }
 
 /* This callback is called periodically if model is configured for periodic publishing */
-static void app_gen_onoff_client_publish_interval_cb(access_model_handle_t handle, void * p_self)
-{
-     __LOG(LOG_SRC_APP, LOG_LEVEL_WARN, "Publish desired message here.\n");
+static void app_gen_onoff_client_publish_interval_cb(access_model_handle_t handle, void *p_self) {
+  __LOG(LOG_SRC_APP, LOG_LEVEL_WARN, "Publish desired message here.\n");
 }
 
 /* Acknowledged transaction status callback, if acknowledged transfer fails, application can
@@ -142,302 +141,349 @@ static void app_gen_onoff_client_publish_interval_cb(access_model_handle_t handl
 * callback.
 */
 static void app_gen_onoff_client_transaction_status_cb(access_model_handle_t model_handle,
-                                                       void * p_args,
-                                                       access_reliable_status_t status)
-{
-    switch(status)
-    {
-        case ACCESS_RELIABLE_TRANSFER_SUCCESS:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer success.\n");
-            break;
+    void *p_args,
+    access_reliable_status_t status) {
+  switch (status) {
+  case ACCESS_RELIABLE_TRANSFER_SUCCESS:
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer success.\n");
+    break;
 
-        case ACCESS_RELIABLE_TRANSFER_TIMEOUT:
-            hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer timeout.\n");
-            break;
+  case ACCESS_RELIABLE_TRANSFER_TIMEOUT:
+    hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer timeout.\n");
+    break;
 
-        case ACCESS_RELIABLE_TRANSFER_CANCELLED:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer cancelled.\n");
-            break;
+  case ACCESS_RELIABLE_TRANSFER_CANCELLED:
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Acknowledged transfer cancelled.\n");
+    break;
 
-        default:
-            ERROR_CHECK(NRF_ERROR_INTERNAL);
-            break;
-    }
+  default:
+    ERROR_CHECK(NRF_ERROR_INTERNAL);
+    break;
+  }
 }
 
 /* Generic OnOff client model interface: Process the received status message in this callback */
-static void app_generic_onoff_client_status_cb(const generic_onoff_client_t * p_self,
-                                               const access_message_rx_meta_t * p_meta,
-                                               const generic_onoff_status_params_t * p_in)
-{
-    if (p_in->remaining_time_ms > 0)
-    {
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server: 0x%04x, Present OnOff: %d, Target OnOff: %d, Remaining Time: %d ms\n",
-              p_meta->src.value, p_in->present_on_off, p_in->target_on_off, p_in->remaining_time_ms);
-    }
-    else
-    {
-        __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server: 0x%04x, Present OnOff: %d\n",
-              p_meta->src.value, p_in->present_on_off);
-    }
+static void app_generic_onoff_client_status_cb(const generic_onoff_client_t *p_self,
+    const access_message_rx_meta_t *p_meta,
+    const generic_onoff_status_params_t *p_in) {
+  if (p_in->remaining_time_ms > 0) {
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server: 0x%04x, Present OnOff: %d, Target OnOff: %d, Remaining Time: %d ms\n",
+        p_meta->src.value, p_in->present_on_off, p_in->target_on_off, p_in->remaining_time_ms);
+  } else {
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "OnOff server: 0x%04x, Present OnOff: %d\n",
+        p_meta->src.value, p_in->present_on_off);
+  }
 }
 
-static void app_model_init(void)
-{
-    /* Instantiate onoff server on element index APP_ONOFF_ELEMENT_INDEX */
-    ERROR_CHECK(app_onoff_init(&m_onoff_server_0, APP_ONOFF_ELEMENT_INDEX));
+static void app_model_init(void) {
+  /* Instantiate onoff server on element index APP_ONOFF_ELEMENT_INDEX */
+  //for (uint32_t i = 0; i < CLIENT_MODEL_INSTANCE_COUNT; ++i)
+  
+  ERROR_CHECK(app_onoff_init(&m_onoff_server_0, APP_ONOFF_ELEMENT_INDEX)); //server op element 0
 
-    m_onoff_client_0.settings.p_callbacks = &client_cbs;
-    m_onoff_client_0.settings.timeout = 0;
-    m_onoff_client_0.settings.force_segmented = APP_CONFIG_FORCE_SEGMENTATION;
-    m_onoff_client_0.settings.transmic_size = APP_CONFIG_MIC_SIZE;
+  m_onoff_client_0.settings.p_callbacks = &client_cbs;
+  m_onoff_client_0.settings.timeout = 0;
+  m_onoff_client_0.settings.force_segmented = APP_CONFIG_FORCE_SEGMENTATION;
+  m_onoff_client_0.settings.transmic_size = APP_CONFIG_MIC_SIZE;
 
-    ERROR_CHECK(generic_onoff_client_init(&m_onoff_client_0, APP_ONOFF_ELEMENT_INDEX+1));
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App OnOff Model Handle: %d\n", m_onoff_server_0.server.model_handle);
+  // ERROR_CHECK(generic_onoff_client_init(&m_clients[i], i + 1));
+  ERROR_CHECK(generic_onoff_client_init(&m_onoff_client_0, APP_ONOFF_ELEMENT_INDEX + 1)); //client op element 1
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "App OnOff Model Handle: %d\n", m_onoff_server_0.server.model_handle);
 }
 
 /*************************************************************************************************/
 
-static void node_reset(void)
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
-    /* This function may return if there are ongoing flash operations. */
-    mesh_stack_device_reset();
+static void node_reset(void) {
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- Node reset  -----\n");
+  hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_RESET);
+  /* This function may return if there are ongoing flash operations. */
+  mesh_stack_device_reset();
 }
 
-static void config_server_evt_cb(const config_server_evt_t * p_evt)
-{
-    if (p_evt->type == CONFIG_SERVER_EVT_NODE_RESET)
-    {
-        node_reset();
-    }
+static void config_server_evt_cb(const config_server_evt_t *p_evt) {
+  if (p_evt->type == CONFIG_SERVER_EVT_NODE_RESET) {
+    node_reset();
+  }
 }
 
-static void button_event_handler(uint32_t button_number)
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
+static void button_event_handler(uint32_t button_number) {
+  // __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Button %u pressed\n", button_number);
 
-    uint32_t status = NRF_SUCCESS;
-    generic_onoff_set_params_t set_params;
-    model_transition_t transition_params;
-    static uint8_t tid = 0;
-    static bool LEDStat; 
+  uint32_t status = NRF_SUCCESS;
+  generic_onoff_set_params_t set_params;
+  model_transition_t transition_params;
+  static uint8_t tid = 0;
 
-    /* Button 1: On, Button 1: Off, Client[0]
+  static bool LEDStat = 0;
+
+#if defined(BOARD_PCA10056)
+  /* Button 1: On, Button 2: Off, Client[0]
+     * Button 2: On, Button 3: Off, Client[1]
      */
 
- if (button_number == 0)
-     {
-          __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "1.1\n");
-         LEDStat = !LEDStat; 
-    }
+  switch (button_number) {
+  case 0:
+  case 2:
+    set_params.on_off = APP_STATE_ON;
+    break;
 
- __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "STAT %u pressed\n", LEDStat);
+  case 1:
+  case 3:
+    set_params.on_off = APP_STATE_OFF;
+    break;
+  }
 
-    switch(LEDStat)
-    {
-        case 0:
-            set_params.on_off = APP_STATE_OFF;
-           
-            break;
-        case 1:
-            set_params.on_off = APP_STATE_ON;
-            
-            break;
-    }
+  set_params.tid = tid++;
+  transition_params.delay_ms = 50;
+  transition_params.transition_time_ms = 100;
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sending msg: ONOFF SET %d\n", set_params.on_off);
 
-    set_params.tid = tid++;
-    transition_params.delay_ms = 50;
-    transition_params.transition_time_ms = 100;
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sending msg: ONOFF SET %d\n", set_params.on_off);
-
-     if (button_number == 1) //reset with rtt input 1
-     {
-        /* Initiate node reset */
-            /* Clear all the states to reset the node. */
-            if (mesh_stack_is_device_provisioned())
-            {
-#if MESH_FEATURE_GATT_PROXY_ENABLED
-                (void) proxy_stop();
-#endif
-                mesh_stack_config_clear();
-                node_reset();
-            }
-            else
-            {
-                __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "The device is unprovisioned. Resetting has no effect.\n");
-            }
-
-            }
-
-    switch (LEDStat)
-    {
-        /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
+  switch (button_number) {
+  /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
         the STATUS message to inform client about the state change. This is a demonstration of
         state change publication due to local event. */
-        case 0:
-        case 1:
-        {
-            //hal_led_pin_set(ONOFF_SERVER_0_LED, !hal_led_pin_get(ONOFF_SERVER_0_LED));
-            //app_onoff_status_publish(&m_onoff_server_0);
-            (void)access_model_reliable_cancel(m_onoff_client_0.model_handle);
-            status = generic_onoff_client_set(&m_onoff_client_0, &set_params, &transition_params);
-            break;
-        }
+  case 0:
+  case 1: {
+    //hal_led_pin_set(ONOFF_SERVER_0_LED, !hal_led_pin_get(ONOFF_SERVER_0_LED));
+    //app_onoff_status_publish(&m_onoff_server_0);
+    (void)access_model_reliable_cancel(m_onoff_client_0.model_handle);
+    status = generic_onoff_client_set(&m_onoff_client_0, &set_params, &transition_params);
+    break;
+  }
 
-        default:
-            break;
+  case 2:
+  /* Initiate node reset */
+  case 3: {
+    /* Clear all the states to reset the node. */
+    if (mesh_stack_is_device_provisioned()) {
+
+#if MESH_FEATURE_GATT_PROXY_ENABLED
+      (void)proxy_stop();
+#endif
+      mesh_stack_config_clear();
+      node_reset();
+    } else {
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "The device is unprovisioned. Resetting has no effect.\n");
     }
+    break;
+  }
 
-    switch (status)
-    {
-        case NRF_SUCCESS:
-            break;
+  default:
+    break;
+  }
+#endif
 
-        case NRF_ERROR_NO_MEM:
-        case NRF_ERROR_BUSY:
-        case NRF_ERROR_INVALID_STATE:
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Client %u cannot send\n", button_number);
-            hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
-            break;
+#if defined(BOARD_PCA10059)
+  /* Button 1: On, Button 1: Off, Client[0]
+     */
+  if (button_number == 0) {
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "1.1\n");
+    LEDStat = !LEDStat;
+  }
 
-        case NRF_ERROR_INVALID_PARAM:
-            /* Publication not enabled for this client. One (or more) of the following is wrong:
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "STAT %u pressed\n", LEDStat);
+
+  switch (LEDStat) {
+  case 0:
+  if(APP_STATE_ON){
+        set_params.on_off = APP_STATE_OFF;
+    }
+  else{
+     set_params.on_off = APP_STATE_ON;
+  }
+    break;
+  case 1:
+  if(APP_STATE_OFF){
+        set_params.on_off = APP_STATE_ON;
+    }
+  else{
+     set_params.on_off = APP_STATE_OFF;
+  }
+
+    break;
+  }
+
+  set_params.tid = tid++;
+  transition_params.delay_ms = 50;
+  transition_params.transition_time_ms = 100;
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sending msg: ONOFF SET %d\n", set_params.on_off);
+
+  if (button_number == 1) //reset with rtt input 1
+  {
+    /* Initiate node reset */
+    /* Clear all the states to reset the node. */
+    if (mesh_stack_is_device_provisioned()) {
+#if MESH_FEATURE_GATT_PROXY_ENABLED
+      (void)proxy_stop();
+#endif
+      mesh_stack_config_clear();
+      node_reset();
+    } else {
+      __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "The device is unprovisioned. Resetting has no effect.\n");
+    }
+  }
+
+  switch (LEDStat) {
+  /* Pressing SW1 on the Development Kit will result in LED state to toggle and trigger
+        the STATUS message to inform client about the state change. This is a demonstration of
+        state change publication due to local event. */
+  case 0:
+  case 1: {
+    //hal_led_pin_set(ONOFF_SERVER_0_LED, !hal_led_pin_get(ONOFF_SERVER_0_LED));
+    //app_onoff_status_publish(&m_onoff_server_0);
+    (void)access_model_reliable_cancel(m_onoff_client_0.model_handle);
+    status = generic_onoff_client_set(&m_onoff_client_0, &set_params, &transition_params);
+    break;
+  }
+
+  default:
+    break;
+  }
+
+#endif
+
+  switch (status) {
+  case NRF_SUCCESS:
+    break;
+
+  case NRF_ERROR_NO_MEM:
+  case NRF_ERROR_BUSY:
+  case NRF_ERROR_INVALID_STATE:
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Client %u cannot send\n", button_number);
+    hal_led_blink_ms(LEDS_MASK, LED_BLINK_SHORT_INTERVAL_MS, LED_BLINK_CNT_NO_REPLY);
+    break;
+
+  case NRF_ERROR_INVALID_PARAM:
+    /* Publication not enabled for this client. One (or more) of the following is wrong:
              * - An application key is missing, or there is no application key bound to the model
              * - The client does not have its publication state set
              *
              * It is the provisioner that adds an application key, binds it to the model and sets
              * the model's publication state.
              */
-            __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Publication not configured for client %u\n", button_number);
-            break;
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Publication not configured for client %u\n", button_number);
+    break;
 
-        default:
-            ERROR_CHECK(status);
-            break;
-    }
+  default:
+    ERROR_CHECK(status);
+    break;
+  }
 }
 
-static void app_rtt_input_handler(int key)
-{
-    if (key >= '0' && key <= '4')
-    {
-        uint32_t button_number = key - '0';
-        button_event_handler(button_number);
-    }
+static void app_rtt_input_handler(int key) {
+  if (key >= '0' && key <= '3') {
+    uint32_t button_number = key - '0';
+    button_event_handler(button_number);
+  }
 }
 
-static void device_identification_start_cb(uint8_t attention_duration_s)
-{
-    hal_led_mask_set(LEDS_MASK, false);
-    hal_led_blink_ms(BSP_LED_2_MASK  | BSP_LED_3_MASK,
-                     LED_BLINK_ATTENTION_INTERVAL_MS,
-                     LED_BLINK_ATTENTION_COUNT(attention_duration_s));
+static void device_identification_start_cb(uint8_t attention_duration_s) {
+  hal_led_mask_set(LEDS_MASK, false);
+  hal_led_blink_ms(BSP_LED_2_MASK | BSP_LED_3_MASK,
+      LED_BLINK_ATTENTION_INTERVAL_MS,
+      LED_BLINK_ATTENTION_COUNT(attention_duration_s));
 }
 
-static void provisioning_aborted_cb(void)
-{
-    hal_led_blink_stop();
+static void provisioning_aborted_cb(void) {
+  hal_led_blink_stop();
 }
 
-static void provisioning_complete_cb(void)
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully provisioned\n");
+static void provisioning_complete_cb(void) {
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Successfully provisioned\n");
 
 #if MESH_FEATURE_GATT_ENABLED
-    /* Restores the application parameters after switching from the Provisioning
+  /* Restores the application parameters after switching from the Provisioning
      * service to the Proxy  */
-    gap_params_init();
-    conn_params_init();
+  gap_params_init();
+  conn_params_init();
 #endif
 
-    dsm_local_unicast_address_t node_address;
-    dsm_local_unicast_addresses_get(&node_address);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Node Address: 0x%04x \n", node_address.address_start);
+  dsm_local_unicast_address_t node_address;
+  dsm_local_unicast_addresses_get(&node_address);
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Node Address: 0x%04x \n", node_address.address_start);
 
-    hal_led_blink_stop();
-    hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
+  hal_led_blink_stop();
+  hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
+  hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_PROV);
 }
 
-static void models_init_cb(void)
-{
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
-    app_model_init();
+static void models_init_cb(void) {
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initializing and adding models\n");
+  app_model_init();
 }
 
-static void mesh_init(void)
-{
-    mesh_stack_init_params_t init_params =
-    {
-        .core.irq_priority       = NRF_MESH_IRQ_PRIORITY_LOWEST,
-        .core.lfclksrc           = DEV_BOARD_LF_CLK_CFG,
-        .core.p_uuid             = NULL,
-        .models.models_init_cb   = models_init_cb,
-        .models.config_server_cb = config_server_evt_cb
-    };
-    //ERROR_CHECK(
-    mesh_stack_init(&init_params, &m_device_provisioned);//);
+static void mesh_init(void) {
+  mesh_stack_init_params_t init_params =
+      {
+          .core.irq_priority = NRF_MESH_IRQ_PRIORITY_LOWEST,
+          .core.lfclksrc = DEV_BOARD_LF_CLK_CFG,
+          .core.p_uuid = NULL,
+          .models.models_init_cb = models_init_cb,
+          .models.config_server_cb = config_server_evt_cb};
+  ERROR_CHECK(mesh_stack_init(&init_params, &m_device_provisioned));
 }
 
-static void initialize(void)
-{
-    __LOG_INIT(LOG_SRC_APP | LOG_SRC_FRIEND, LOG_LEVEL_DBG1, LOG_CALLBACK_DEFAULT);
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "----- BLE Mesh Light Switch Server Demo -----\n");
+static void initialize(void) {
+#if defined(NRF51) && defined(NRF_MESH_STACK_DEPTH)
+  stack_depth_paint_stack();
+#endif
 
-    ERROR_CHECK(app_timer_init());
-    hal_leds_init();
-  
+  __LOG_INIT(LOG_SRC_APP | LOG_SRC_FRIEND, LOG_LEVEL_DBG1, LOG_CALLBACK_DEFAULT);
+
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Client/Sever/Serial DEMO\n");
+
+  ERROR_CHECK(app_timer_init());
+  hal_leds_init();
+
 #if BUTTON_BOARD
-    ERROR_CHECK(hal_buttons_init(button_event_handler));
+  ERROR_CHECK(hal_buttons_init(button_event_handler));
 #endif
 
-    ble_stack_init();
+  ble_stack_init();
 
 #if MESH_FEATURE_GATT_ENABLED
-    gap_params_init();
-    conn_params_init();
+  gap_params_init();
+  conn_params_init();
 #endif
 
-    mesh_init();
+  mesh_init();
+
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Initialization complete!\n");
 }
 
-static void start(void)
-{
-    rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
+static void start(void) {
 
-    if (!m_device_provisioned)
-    {
-        static const uint8_t static_auth_data[NRF_MESH_KEY_SIZE] = STATIC_AUTH_DATA;
-        mesh_provisionee_start_params_t prov_start_params =
+  rtt_input_enable(app_rtt_input_handler, RTT_INPUT_POLL_PERIOD_MS);
+
+  if (!m_device_provisioned) {
+    static const uint8_t static_auth_data[NRF_MESH_KEY_SIZE] = STATIC_AUTH_DATA;
+    mesh_provisionee_start_params_t prov_start_params =
         {
-            .p_static_data    = static_auth_data,
+            .p_static_data = static_auth_data,
             .prov_complete_cb = provisioning_complete_cb,
             .prov_device_identification_start_cb = device_identification_start_cb,
             .prov_device_identification_stop_cb = NULL,
             .prov_abort_cb = provisioning_aborted_cb,
-            .p_device_uri = EX_URI_LS_SERVER
-        };
-        ERROR_CHECK(mesh_provisionee_prov_start(&prov_start_params));
-    }
+            .p_device_uri = EX_URI_LS_SERVER};
+    ERROR_CHECK(mesh_provisionee_prov_start(&prov_start_params));
+  }
 
-    mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());
+  mesh_app_uuid_print(nrf_mesh_configure_device_uuid_get());  //get uuid
 
-    ERROR_CHECK(mesh_stack_start());
+  ERROR_CHECK(mesh_stack_start());
 
-    hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
-    hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
+  __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Application started!\n");
 }
 
-int main(void)
-{
-    initialize();
-    start();
+int main(void) {
+  initialize();
+  start();
 
-    for (;;)
-    {
-       (void)sd_app_evt_wait();
-    }
+  hal_led_mask_set(LEDS_MASK, LED_MASK_STATE_OFF);
+  hal_led_blink_ms(LEDS_MASK, LED_BLINK_INTERVAL_MS, LED_BLINK_CNT_START);
+
+  for (;;) {
+    (void)sd_app_evt_wait();
+  }
 }

@@ -1,6 +1,95 @@
 <!DOCTYPE CrossStudio_Session_File>
 <session>
-	<Files>
-		<SessionOpenFile path="../../doc/getting_started/SES.md"/>
-	</Files>
+ <Bookmarks>
+  <BookmarkItem objectName="" line="89" column="0" path="D:/nRF5_SDK_15.3.0/nRF5-SDK-for-Mesh/examples/serial/include/nrf_mesh_config_app.h" number="3" extra="#define ACCESS_ELEMENT_COUNT (2)" color="8"/>
+  <BookmarkItem objectName="" line="81" column="0" path="D:/nRF5_SDK_15.3.0/nRF5-SDK-for-Mesh/examples/serial/include/nrf_mesh_config_app.h" number="4" extra="#define ACCESS_MODEL_COUNT (2)" color="8"/>
+ </Bookmarks>
+ <Breakpoints groups="Breakpoints" active_group="Breakpoints">
+  <Exceptions set="MemManage;UsageFault_Coprocessor;UsageFault_CheckingError;UsageFault_StateError;BusFault;ExceptionEntryReturnFault;HardFault"/>
+ </Breakpoints>
+ <ExecutionProfileWindow/>
+ <FrameBufferWindow>
+  <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
+ </FrameBufferWindow>
+ <Memory1>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="serial_nrf52840_xxAA_s140_6.1.1" radix="16" sizeText="" addressText=""/>
+ </Memory1>
+ <Memory2>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="serial_nrf52840_xxAA_s140_6.1.1" radix="16" sizeText="" addressText=""/>
+ </Memory2>
+ <Memory3>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="serial_nrf52840_xxAA_s140_6.1.1" radix="16" sizeText="" addressText=""/>
+ </Memory3>
+ <Memory4>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="serial_nrf52840_xxAA_s140_6.1.1" radix="16" sizeText="" addressText=""/>
+ </Memory4>
+ <Project>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Access"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Application"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Bearer"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Configuration Model"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Core"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Health Model"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Mesh stack"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;nRF5 SDK"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Other"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Provisioning"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;SEGGER RTT"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Serial"/>
+  <ProjectSessionItem path="serial_nrf52840_xxAA_s140_6.1.1;serial_nrf52840_xxAA_s140_6.1.1;Toolchain"/>
+ </Project>
+ <Register1>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/msp;CPU/psp;CPU/cfbp;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="serial_nrf52840_xxAA_s140_6.1.1" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register1>
+ <Register2>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/msp;CPU/psp;CPU/cfbp;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="serial_nrf52840_xxAA_s140_6.1.1" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register2>
+ <Register3>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/msp;CPU/psp;CPU/cfbp;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="serial_nrf52840_xxAA_s140_6.1.1" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register3>
+ <Register4>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/msp;CPU/psp;CPU/cfbp;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="serial_nrf52840_xxAA_s140_6.1.1" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register4>
+ <Threads>
+  <ThreadsWindow showLists=""/>
+ </Threads>
+ <TraceWindow>
+  <Trace enabled="Yes"/>
+ </TraceWindow>
+ <Watch1>
+  <Watches active="1" update="Never"/>
+ </Watch1>
+ <Watch2>
+  <Watches active="0" update="Never"/>
+ </Watch2>
+ <Watch3>
+  <Watches active="0" update="Never"/>
+ </Watch3>
+ <Watch4>
+  <Watches active="0" update="Never"/>
+ </Watch4>
+ <Files>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../doc/getting_started/SES.md" selected="0" top="29" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="61" useTextEdit="1" useBinaryEdit="0" left="0" path="src/main.c" selected="0" top="28" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="37" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/src/serial.c" selected="0" top="20" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/include/serial.h" selected="0" top="62" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="94" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/api/nrf_mesh_serial.h" selected="0" top="84" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/src/serial_handler_config.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="46" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/src/serial_bearer.c" selected="0" top="37" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="48" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/core/api/nrf_mesh.h" selected="0" top="135" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="42" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/core/api/nrf_mesh_config_core.h" selected="0" top="39" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="81" useTextEdit="1" useBinaryEdit="0" left="0" path="include/nrf_mesh_config_app.h" selected="1" top="78" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="21" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/api/nrf_mesh_config_serial_uart.h" selected="0" top="2" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="48" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/boards/pca10056.h" selected="0" top="36" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="71" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/boards/boards.h" selected="0" top="61" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/boards/pca10059.h" selected="0" top="77" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="754" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/softdevice/s140/headers/nrf_soc.h" selected="0" top="741" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/prov/api/mesh_opt_prov.h" selected="0" top="52" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="61" useTextEdit="1" useBinaryEdit="0" left="0" path="../../mesh/serial/src/nrf_mesh_serial.c" selected="0" top="51" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="2087" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/softdevice/s140/headers/ble_gap.h" selected="0" top="2061" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="339" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../components/toolchain/cmsis/include/cmsis_gcc.h" selected="0" top="311" codecName="Default"/>
+ </Files>
+ <ARMCrossStudioWindow activeProject="serial_nrf52840_xxAA_s140_6.1.1" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

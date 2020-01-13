@@ -49,8 +49,10 @@
  */
 
 /** Pin confiuration */
+#if defined(BOARD_PCA10056)
 #if !(defined(RX_PIN_NUMBER) && defined(TX_PIN_NUMBER) && defined(CTS_PIN_NUMBER) && defined(RTS_PIN_NUMBER))
 #error "UART pin numbers are not defined."
+#endif
 #endif
 
 /** Enable hardware flow control or not  */

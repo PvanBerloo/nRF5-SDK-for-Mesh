@@ -57,7 +57,7 @@ build/light_switch_server_nrf52840_xxAA_s140_6.1.1_Debug/obj/simple_hal.o: \
  D:/nRF5_SDK_15.3.0/components/libraries/util/sdk_resources.h \
  D:/nRF5_SDK_15.3.0/components/softdevice/s140/headers/nrf_sd_def.h \
  D:/nRF5_SDK_15.3.0/modules/nrfx/drivers/nrfx_errors.h \
- D:/nRF5_SDK_15.3.0/components/boards/pca10059.h \
+ D:/nRF5_SDK_15.3.0/components/boards/pca10056.h \
  D:/nRF5_SDK_15.3.0/components/libraries/delay/nrf_delay.h \
  ../../../mesh/core/api/nrf_mesh_defines.h \
  ../../../mesh/core/include/timer.h \

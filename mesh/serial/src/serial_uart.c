@@ -64,6 +64,7 @@ void UART0_IRQHandler(void)
 /********** Interface Functions **********/
 uint32_t serial_uart_init(serial_uart_rx_cb_t rx_cb, serial_uart_tx_cb_t tx_cb)
 {
+#if defined(BOARD_PCA10056)
     if (rx_cb == NULL || tx_cb == NULL)
     {
         return NRF_ERROR_NULL;
@@ -78,6 +79,7 @@ uint32_t serial_uart_init(serial_uart_rx_cb_t rx_cb, serial_uart_tx_cb_t tx_cb)
     nrf_gpio_cfg_output(TX_PIN_NUMBER);
     nrf_gpio_pin_set(TX_PIN_NUMBER);
     nrf_gpio_cfg_output(RTS_PIN_NUMBER);
+
 
     /* Initialize UART hardware: */
     NRF_UART0->PSELTXD = TX_PIN_NUMBER;
@@ -94,6 +96,7 @@ uint32_t serial_uart_init(serial_uart_rx_cb_t rx_cb, serial_uart_tx_cb_t tx_cb)
     NRF_UART0->TASKS_STARTRX = 1;
     NVIC_SetPriority(UART0_IRQn, UART_IRQ_LEVEL);
     NVIC_EnableIRQ(UART0_IRQn);
+#endif
 
     return NRF_SUCCESS;
 }

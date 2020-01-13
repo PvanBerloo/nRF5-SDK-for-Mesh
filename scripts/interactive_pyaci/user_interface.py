@@ -61,15 +61,21 @@ while True:
  
     if keycode == '6':
         client_id = int(input('Client ID: '))
+        element_id = int(input('Element ID: '))
+        model_id = int(input('Model ID: '))
+        group_address = int(input('Group address: '))
         client_unicast_address = interface.get_nodes()[client_id].unicast_address
 
-        interface.client_set_publish(int(client_unicast_address), 1, 0x1001, 50000)
+        interface.client_set_publish(int(client_unicast_address), element_id, model_id, group_address)
 
     if keycode == '7':
         server_id = int(input('Server ID: '))
+        element_id = int(input('Element ID: '))
+        model_id = int(input('Model ID: '))
+        group_address = int(input('Group address: '))
         server_unicast_address = interface.get_nodes()[server_id].unicast_address
 
-        interface.server_set_subscribe(int(server_unicast_address), 0, 0x1000, 50000)
+        interface.server_set_subscribe(int(server_unicast_address), element_id, model_id, group_address)
  
     if keycode == '8':
         i = int(input('Enter the index of the node: '))

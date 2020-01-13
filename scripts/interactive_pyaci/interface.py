@@ -23,7 +23,6 @@ from mesh import types as mt                            # NOQA: ignore unused im
 from mesh.database import MeshDB                        # NOQA: ignore unused import
 from models.config import ConfigurationClient           # NOQA: ignore unused import
 from models.generic_on_off import GenericOnOffClient    # NOQA: ignore unused import
-from models.health_client import HealthClient
  
 class Logger:
     def __init__(self):
@@ -254,11 +253,6 @@ class Interface:
             for element in node.elements:
                 for model in element.models:
                     self.cc.model_app_bind(unicast_address + element.index, 0, model.model_id)
-
-            #time.sleep(0.5)
-            #self.cc.model_publication_set(unicast_address, mt.ModelId(0x0002), mt.Publish(0x0001, index=0, ttl=10))
-            #time.sleep(0.5)
-            #self.cc.heartbeat_publication_set(0xFFFF, 0xFFFF, 0x01, ttl=10)
 
             time.sleep(0.5)
 

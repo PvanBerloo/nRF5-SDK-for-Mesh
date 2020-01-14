@@ -40,6 +40,64 @@
     }
   ],
   "nodes": [
+    {
+      "UUID": "f844ca43d32d8546b2dd6d484f36440d",
+      "appKeys": [
+        0
+      ],
+      "cid": "0059",
+      "configComplete": false,
+      "crpl": 40,
+      "deviceKey": "6932aa8f12fb2bbe89ea2c9e6870818f",
+      "elements": [
+        {
+          "index": 0,
+          "location": "0000",
+          "models": [
+            {
+              "modelId": "0000"
+            },
+            {
+              "bind": [
+                0
+              ],
+              "modelId": "0002"
+            },
+            {
+              "bind": [
+                0
+              ],
+              "modelId": "1000"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "location": "0000",
+          "models": [
+            {
+              "bind": [
+                0
+              ],
+              "modelId": "1001"
+            }
+          ]
+        }
+      ],
+      "features": {
+        "friend": 2,
+        "lowPower": 2,
+        "proxy": 0,
+        "relay": 0
+      },
+      "netKeys": [
+        0
+      ],
+      "pid": "0000",
+      "security": "low",
+      "unicastAddress": 16,
+      "vid": "0000"
+    }
   ],
   "provisioners": [
     {
@@ -59,5 +117,5 @@
       "name": "BT Mesh Provisioner"
     }
   ],
-  "timestamp": "2018-03-09 15:24:56.753238"
+  "timestamp": "2020-01-13 15:25:16.805291"
 }

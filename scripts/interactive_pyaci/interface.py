@@ -190,7 +190,7 @@ class Interface:
  
         self.cc.publish_set(devkey_handle, address_handle)
         self.cc.model_subscription_delete_all(node.unicast_address + element, mt.ModelId(modelid))
-        self.cc.model_subscription_add(node.unicast_address + element + element, subscribe_address, mt.ModelId(modelid))
+        self.cc.model_subscription_add(node.unicast_address + element, subscribe_address, mt.ModelId(modelid))
 
         self._free_handles(devkey_handle, address_handle)
  
@@ -252,7 +252,9 @@ class Interface:
             node = self._find_node(unicast_address)
             for element in node.elements:
                 for model in element.models:
-                    self.cc.model_app_bind(unicast_address + element.index, 0, model.model_id)
+                    if model.model_id.model_id >= 0x1000:
+                        time.sleep(0.1)
+                        self.cc.model_app_bind(unicast_address + element.index, 0, model.model_id)
 
             time.sleep(0.5)
 

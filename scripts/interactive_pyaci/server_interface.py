@@ -128,7 +128,7 @@ def send_response(result, error, id):
     string = json.dumps(obj)
     buffer = string.encode('ascii')
     message_size = struct.pack("H",len(buffer))
-    conn.sendall(message_size)
+    #conn.sendall(message_size)
     conn.sendall(buffer)
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
